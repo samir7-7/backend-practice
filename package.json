@@ -1,0 +1,25 @@
+{
+  "name": "youtube-backend",
+  "version": "1.0.0",
+  "description": "This is a complete backend of youtube",
+  "homepage": "https://github.com/samir7-7/backend-practice#readme",
+  "bugs": {
+    "url": "https://github.com/samir7-7/backend-practice/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samir7-7/backend-practice.git"
+  },
+  "license": "ISC",
+  "author": "Samir Nepal",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "mongoose": "^9.6.3"
+  }
+}
