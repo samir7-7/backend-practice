@@ -68,7 +68,7 @@ userSchema.methods.checkAccessToken = function () {
     { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
   );
 };
-userSchema.methods.refreshToken = function () {
+userSchema.methods.refreshTokenFunction = function () {
   jwt.sign(
     {
       _id: this.userID,
