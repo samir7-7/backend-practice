@@ -6,7 +6,6 @@ const userSchema = new mongoose.Schema(
   {
     userID: {
       type: String,
-      required: [true, "User ID is required"],
       unique: true,
       primaryKey: true,
     },
@@ -32,11 +31,10 @@ const userSchema = new mongoose.Schema(
     },
     refreshToken: {
       type: String,
-      required: [true, "Refresh token is required"],
     },
-    avtar: {
+    avatar: {
       type: String,
-      required: [true, "Avtar is required"],
+      required: [true, "Avatar is required"],
     },
     coverImage: {
       type: String,
@@ -46,9 +44,9 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre("save", async function (next) {
-  if (this.modified("password")) {
+  if (this.isModified("password")) {
     this.password = await bcrypt.hash(this.password, 10);
-    next();
+    next;
   }
 });
 
