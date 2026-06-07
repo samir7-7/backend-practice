@@ -30,5 +30,12 @@ router.route("/login").post(loginUser);
 
 router.route("/logout").post(verifyJWT, logoutUser);
 router.route("/refresh-token").get(refreshAccessToken);
+router.route("/update-password").put(verifyJWT, changeCurrentUserPassword);
+router.route("/update-information").patch(verifyJWT, updateInformation);
+router
+  .route("/update-avatar")
+  .put(verifyJWT, upload.single("avatar"), updateAvatar);
+router.route("/channel-profile").get(verifyJWT, getUserChannelProfile);
+router.route("/watch-history").get(verifyJWT, getWatchHistory);
 
 export default router;
