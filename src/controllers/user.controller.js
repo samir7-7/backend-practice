@@ -1,7 +1,10 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.models.js";
 import { ApiError } from "../utils/apiError.js";
-import { uploadImageToCloudinary } from "../utils/cloudinary.js";
+import {
+  uploadImageToCloudinary,
+  deleteImageFromCloudinary,
+} from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken";
 
@@ -213,4 +216,89 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new ApiError(401, error?.message || "Invalid Refresh Token");
   }
 });
-export { registerUser, loginUser, logoutUser, refreshAccessToken };
+
+const changeCurrentUserPassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  const user = await User.findById(req.user?._id);
+  const isPasswordCorrect = await user.isPasswordCorrect(currentPassword);
+
+  if (!isPasswordCorrect) {
+    throw new ApiError(400, "Incorrect current password");
+  }
+  user.password = newPassword;
+
+  await user.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password changed successfully"));
+});
+
+const updateInformation = asyncHandler(async (req, res) => {
+  const { fullName, email, username } = req.body;
+
+  if ([fullName, email, username].some((field) => field.trim() === "")) {
+    throw new ApiError(400, "All fields are required");
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(req.user?._id, {
+    $set: {
+      fullName,
+      email,
+      username,
+    },
+  }).select("-password -refreshToken");
+
+  if (!updatedUser) {
+    throw new ApiError(500, "Failed to update user information");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        user: updatedUser,
+      },
+      "User information updated successfully"
+    )
+  );
+});
+
+const updateAvatar = asyncHandler(async (req, res) => {
+  const avatarLocalPath = req.file?.path;
+  if (!avatarLocalPath) {
+    throw new ApiError(400, "Avatar image is required");
+  }
+
+  const avatar = await uploadImageToCloudinary(avatarLocalPath);
+  if (!avatar.url) {
+    throw new ApiError(500, "Failed to upload avatar image");
+  }
+
+  const updatedUser = await User.findById(req.user?._id);
+  const oldAvatarUrl = updatedUser.url;
+
+  updatedUser.avatar = avatar.url;
+  await updatedUser.save({ validateBeforeSave: false });
+
+  await deleteImageFromCloudinary(oldAvatarUrl);
+
+  if (!updatedUser) {
+    throw new ApiError(500, "Failed to update avatar");
+  }
+  res.status(200).json(
+    new ApiResponse(200, "User avatar updated successfully", {
+      user: updatedUser,
+    })
+  );
+});
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  changeCurrentUserPassword,
+  updateInformation,
+  updateAvatar,
+};
